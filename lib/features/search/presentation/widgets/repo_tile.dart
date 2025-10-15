@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yumeimi_github_search/features/search/presentation/search_result_page.dart';
 import '../../model/github_repo.dart';
 
 class RepoTile extends StatelessWidget {
@@ -39,7 +40,10 @@ class RepoTile extends StatelessWidget {
           ],
         ),
         onTap: () {
-          // TODO: 詳細ページに遷移
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => SearchResultPage(repo: repo)),
+          );
         },
       ),
     );
