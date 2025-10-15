@@ -5,28 +5,56 @@ import 'search_state.dart';
 
 final searchNotifierProvider =
     StateNotifierProvider<SearchNotifier, SearchState>(
-      (ref) =>
-          SearchNotifier(repository: GithubRepositoryImpl(api: GitHubApi())),
+      (ref) => SearchNotifier(GithubRepositoryImpl(api: GitHubApi())),
     );
 
 class SearchNotifier extends StateNotifier<SearchState> {
   final GithubRepository repository;
 
-  SearchNotifier({required this.repository}) : super(SearchState());
+  bool _isThrottled = false;
 
-  Future<void> search(String keyword) async {
-    if (keyword.isEmpty) return;
+  SearchNotifier(this.repository) : super(SearchState());
 
-    state = state.copyWith(status: SearchStatus.loading);
+  Future<void> search(String keyword, {bool loadMore = false}) async {
+    if (_isThrottled || keyword.isEmpty) return;
+
+    _isThrottled = true;
+    // api制限を避けるため500msの間隔を空ける
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _isThrottled = false;
+    });
+
+    final nextPage = loadMore ? state.page + 1 : 1;
+
+    if (!loadMore) {
+      state = state.copyWith(
+        status: SearchStatus.loading,
+        page: 1,
+        hasMore: true,
+        repos: [],
+      );
+    }
 
     try {
-      final results = await repository.search(keyword);
-      state = state.copyWith(status: SearchStatus.success, repos: results);
+      final results = await repository.search(keyword, nextPage);
+
+      state = state.copyWith(
+        status: SearchStatus.success,
+        repos: loadMore ? [...state.repos, ...results] : results,
+        page: nextPage,
+        hasMore: results.length == 30,
+      );
     } catch (e) {
       state = state.copyWith(
         status: SearchStatus.error,
         errorMessage: e.toString(),
       );
+    }
+  }
+
+  void clearError() {
+    if (state.status == SearchStatus.error) {
+      state = state.copyWith(status: SearchStatus.initial, errorMessage: '');
     }
   }
 }

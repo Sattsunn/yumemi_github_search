@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yumeimi_github_search/features/search/provider/search_notifier.dart';
 import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
 import 'widgets/repo_tile.dart';
-import '../model/github_repo.dart';
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
@@ -14,11 +13,36 @@ class SearchPage extends ConsumerStatefulWidget {
 
 class _SearchPageState extends ConsumerState<SearchPage> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final state = ref.read(searchNotifierProvider);
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        state.hasMore &&
+        state.status != SearchStatus.loading) {
+      ref
+          .read(searchNotifierProvider.notifier)
+          .search(_controller.text, loadMore: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(searchNotifierProvider);
-    // ThemeModeではなくcontextから明るさを取得
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -93,6 +117,20 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   Widget _buildResult(SearchState state, bool isDark) {
+    if (state.status == SearchStatus.error && state.errorMessage.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.errorMessage),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+        ref.read(searchNotifierProvider.notifier).clearError();
+      });
+    }
+
     switch (state.status) {
       case SearchStatus.initial:
         return Center(
@@ -101,23 +139,35 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
           ),
         );
+
       case SearchStatus.loading:
-        return const Center(child: CircularProgressIndicator());
+        if (state.repos.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return _buildRepoList(state);
+
       case SearchStatus.success:
-        return ListView.builder(
-          itemCount: state.repos.length,
-          itemBuilder: (context, index) {
-            final GithubRepo repo = state.repos[index];
-            return RepoTile(repo: repo);
-          },
-        );
+        return _buildRepoList(state);
+
       case SearchStatus.error:
-        return Center(
-          child: Text(
-            'エラー: ${state.errorMessage}',
-            style: TextStyle(color: isDark ? Colors.red[300] : Colors.red),
-          ),
-        );
+        return _buildRepoList(state);
     }
+  }
+
+  Widget _buildRepoList(SearchState state) {
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: state.repos.length + (state.hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index < state.repos.length) {
+          return RepoTile(repo: state.repos[index]);
+        } else {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+      },
+    );
   }
 }
