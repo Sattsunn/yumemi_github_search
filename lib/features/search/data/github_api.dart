@@ -26,4 +26,20 @@ class GitHubApi {
       throw Exception('Failed to fetch repositories: ${response.statusCode}');
     }
   }
+
+  Future<GithubRepo> fetchRepositoryWithSubscribers(
+    String owner,
+    String repo,
+  ) async {
+    final uri = Uri.https('api.github.com', '/repos/$owner/$repo');
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final repo = GithubRepo.fromJson(data);
+      return repo.copyWith(watchers: data['subscribers_count'] ?? 0);
+    } else {
+      throw Exception('Failed to fetch repository detail');
+    }
+  }
 }

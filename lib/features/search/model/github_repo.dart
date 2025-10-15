@@ -31,4 +31,26 @@ class GithubRepo {
       issues: json['open_issues_count'] ?? 0,
     );
   }
+
+  GithubRepo copyWith({
+    String? name,
+    String? ownerName,
+    String? ownerAvatarUrl,
+    String? language,
+    int? stars,
+    int? watchers,
+    int? forks,
+    int? issues,
+  }) {
+    return GithubRepo(
+      name: name ?? this.name,
+      ownerName: ownerName ?? this.ownerName,
+      ownerAvatarUrl: ownerAvatarUrl ?? this.ownerAvatarUrl,
+      language: language ?? this.language,
+      stars: stars ?? this.stars,
+      watchers: watchers ?? this.watchers,
+      forks: forks ?? this.forks,
+      issues: issues ?? this.issues,
+    );
+  }
 }
