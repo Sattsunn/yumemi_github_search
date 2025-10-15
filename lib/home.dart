@@ -8,7 +8,7 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'GitHub Repository Search'),
+      appBar: const CustomAppBar(),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
         child: const SearchPage(),

@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yumeimi_github_search/core/providers/theme_provider.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  final String title;
-
-  const CustomAppBar({super.key, required this.title});
+  const CustomAppBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,12 +26,16 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: isDark ? Colors.white : Colors.black87,
+          Expanded(
+            child: Text(
+              'GitHub Repository Search',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
