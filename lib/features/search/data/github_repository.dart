@@ -1,8 +1,13 @@
+import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
 import 'github_api.dart';
 import 'package:yumeimi_github_search/features/search/model/github_repo.dart';
 
 abstract class GithubRepository {
-  Future<List<GithubRepo>> search(String keyword, int page);
+  Future<List<GithubRepo>> search(
+    String keyword,
+    int page,
+    RepoSortOption sortOption,
+  );
 }
 
 class GithubRepositoryImpl implements GithubRepository {
@@ -11,7 +16,11 @@ class GithubRepositoryImpl implements GithubRepository {
   GithubRepositoryImpl({required this.api});
 
   @override
-  Future<List<GithubRepo>> search(String keyword, int page) async {
-    return await api.searchRepositories(keyword, page: page);
+  Future<List<GithubRepo>> search(
+    String keyword,
+    int page,
+    RepoSortOption sortOption,
+  ) async {
+    return await api.search(keyword, page, sortOption);
   }
 }

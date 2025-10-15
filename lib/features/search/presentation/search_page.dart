@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yumeimi_github_search/features/search/presentation/widgets/search_bar_section.dart';
 import 'package:yumeimi_github_search/features/search/provider/search_notifier.dart';
 import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
 import 'widgets/repo_tile.dart';
@@ -14,23 +15,30 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _showScrollToTop = false;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
-  }
+    _scrollController.addListener(() {
+      final state = ref.read(searchNotifierProvider);
 
-  void _onScroll() {
-    final state = ref.read(searchNotifierProvider);
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
-        state.hasMore &&
-        state.status != SearchStatus.loading) {
-      ref
-          .read(searchNotifierProvider.notifier)
-          .search(_controller.text, loadMore: true);
-    }
+      // 無限スクロール
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          state.hasMore &&
+          state.status != SearchStatus.loading) {
+        ref
+            .read(searchNotifierProvider.notifier)
+            .search(_controller.text, loadMore: true);
+      }
+
+      // スクロールトップボタンの表示制御
+      final shouldShow = _scrollController.offset > 300;
+      if (shouldShow != _showScrollToTop) {
+        setState(() => _showScrollToTop = shouldShow);
+      }
+    });
   }
 
   @override
@@ -49,67 +57,30 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 48,
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      labelText: 'キーワードを入力',
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                      ),
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _controller.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _controller.clear();
-                                ref
-                                    .read(searchNotifierProvider.notifier)
-                                    .search('');
-                              },
-                            )
-                          : null,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ref
-                        .read(searchNotifierProvider.notifier)
-                        .search(_controller.text);
-                    FocusScope.of(context).unfocus();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    backgroundColor: isDark ? Colors.white : Colors.black87,
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    '検索',
-                    style: TextStyle(
-                      color: isDark ? Colors.black87 : Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          SearchBarSection(),
+          const SizedBox(height: 8),
+
+          if (state.repos.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _showScrollToTop
+                    ? IconButton(
+                        icon: const Icon(Icons.arrow_upward),
+                        onPressed: () {
+                          _scrollController.animateTo(
+                            0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      )
+                    : const SizedBox(width: 48),
+              ],
+            ),
+          ],
+
           Expanded(child: _buildResult(state, isDark)),
         ],
       ),
@@ -133,11 +104,20 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     switch (state.status) {
       case SearchStatus.initial:
-        return Center(
-          child: Text(
-            '検索キーワードを入力してください',
-            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
-          ),
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.info_outline, size: 64, color: Colors.grey[800]),
+            const SizedBox(height: 16),
+            Text(
+              '検索キーワードを入力してください',
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black87,
+                fontSize: 16,
+              ),
+            ),
+          ],
         );
 
       case SearchStatus.loading:
@@ -147,8 +127,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         return _buildRepoList(state);
 
       case SearchStatus.success:
-        return _buildRepoList(state);
-
       case SearchStatus.error:
         return _buildRepoList(state);
     }

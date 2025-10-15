@@ -10,25 +10,30 @@ final searchNotifierProvider =
 
 class SearchNotifier extends StateNotifier<SearchState> {
   final GithubRepository repository;
-
   bool _isThrottled = false;
 
-  SearchNotifier(this.repository) : super(SearchState());
-
+  SearchNotifier(this.repository)
+    : super(
+        SearchState(
+          sortOption: const RepoSortOption(
+            RepoSortField.stars,
+            RepoSortOrder.desc,
+          ),
+        ),
+      );
   Future<void> search(String keyword, {bool loadMore = false}) async {
-    if (_isThrottled || keyword.isEmpty) return;
+    if (_isThrottled || (keyword.isEmpty && !loadMore)) return;
 
     _isThrottled = true;
-    // api制限を避けるため500msの間隔を空ける
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _isThrottled = false;
-    });
 
     final nextPage = loadMore ? state.page + 1 : 1;
+    final effectiveKeyword = loadMore ? state.keyword : keyword;
 
+    // 新規検索時のみ状態をリセット
     if (!loadMore) {
       state = state.copyWith(
         status: SearchStatus.loading,
+        keyword: effectiveKeyword,
         page: 1,
         hasMore: true,
         repos: [],
@@ -36,11 +41,18 @@ class SearchNotifier extends StateNotifier<SearchState> {
     }
 
     try {
-      final results = await repository.search(keyword, nextPage);
+      // API呼び出し
+      final results = await repository.search(
+        effectiveKeyword,
+        nextPage,
+        state.sortOption,
+      );
 
+      // 結果を追加または置き換え
       state = state.copyWith(
         status: SearchStatus.success,
         repos: loadMore ? [...state.repos, ...results] : results,
+        keyword: effectiveKeyword,
         page: nextPage,
         hasMore: results.length == 30,
       );
@@ -49,7 +61,13 @@ class SearchNotifier extends StateNotifier<SearchState> {
         status: SearchStatus.error,
         errorMessage: e.toString(),
       );
+    } finally {
+      _isThrottled = false;
     }
+  }
+
+  void setSortOption(RepoSortOption option) {
+    state = state.copyWith(sortOption: option);
   }
 
   void clearError() {
