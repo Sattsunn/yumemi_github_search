@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:yumeimi_github_search/core/constants.dart';
 import 'package:yumeimi_github_search/features/search/presentation/search_result_page.dart';
 import '../../model/github_repo.dart';
 
@@ -16,7 +18,20 @@ class RepoTile extends StatelessWidget {
           backgroundImage: NetworkImage(repo.ownerAvatarUrl),
         ),
         title: Text(repo.name),
-        subtitle: Text('Language: ${repo.language}'),
+        subtitle: Row(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: getLanguageColor(repo.language),
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(repo.language),
+          ],
+        ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -32,7 +47,11 @@ class RepoTile extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.call_split, size: 16, color: Colors.grey),
+                const Icon(
+                  FontAwesomeIcons.codeBranch,
+                  size: 16,
+                  color: Colors.grey,
+                ),
                 const SizedBox(width: 4),
                 Text('${repo.forks}'),
               ],
