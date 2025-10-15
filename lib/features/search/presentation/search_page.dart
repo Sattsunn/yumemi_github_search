@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yumeimi_github_search/core/providers/theme_provider.dart';
+import 'package:yumeimi_github_search/features/search/provider/search_notifier.dart';
 import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
-import '../provider/search_notifier.dart';
 import 'widgets/repo_tile.dart';
 import '../model/github_repo.dart';
 
@@ -19,8 +18,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(searchNotifierProvider);
-    final themeMode = ref.watch(themeModeProvider);
-    final isDark = themeMode == ThemeMode.dark;
+    // ThemeModeではなくcontextから明るさを取得
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -61,11 +60,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () => {
+                  onPressed: () {
                     ref
                         .read(searchNotifierProvider.notifier)
-                        .search(_controller.text),
-                    FocusScope.of(context).unfocus(),
+                        .search(_controller.text);
+                    FocusScope.of(context).unfocus();
                   },
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
@@ -87,16 +86,21 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ],
           ),
           const SizedBox(height: 16),
-          Expanded(child: _buildResult(state)),
+          Expanded(child: _buildResult(state, isDark)),
         ],
       ),
     );
   }
 
-  Widget _buildResult(SearchState state) {
+  Widget _buildResult(SearchState state, bool isDark) {
     switch (state.status) {
       case SearchStatus.initial:
-        return const Center(child: Text('検索キーワードを入力してください'));
+        return Center(
+          child: Text(
+            '検索キーワードを入力してください',
+            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+          ),
+        );
       case SearchStatus.loading:
         return const Center(child: CircularProgressIndicator());
       case SearchStatus.success:
@@ -108,7 +112,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           },
         );
       case SearchStatus.error:
-        return Center(child: Text('エラー: ${state.errorMessage}'));
+        return Center(
+          child: Text(
+            'エラー: ${state.errorMessage}',
+            style: TextStyle(color: isDark ? Colors.red[300] : Colors.red),
+          ),
+        );
     }
   }
 }
