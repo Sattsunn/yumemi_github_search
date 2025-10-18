@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yumeimi_github_search/core/ui/custom_app_bar.dart';
 import 'package:yumeimi_github_search/features/search/presentation/widgets/search_bar_section.dart';
 import 'package:yumeimi_github_search/features/search/provider/search_notifier.dart';
 import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
@@ -14,6 +15,7 @@ class SearchPage extends ConsumerStatefulWidget {
 
 class _SearchPageState extends ConsumerState<SearchPage> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _languageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _showScrollToTop = false;
 
@@ -30,10 +32,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           state.status != SearchStatus.loading) {
         ref
             .read(searchNotifierProvider.notifier)
-            .search(_controller.text, loadMore: true);
+            .search(_controller.text, _languageController.text, loadMore: true);
       }
 
-      // スクロールトップボタンの表示制御
       final shouldShow = _scrollController.offset > 300;
       if (shouldShow != _showScrollToTop) {
         setState(() => _showScrollToTop = shouldShow);
@@ -45,6 +46,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void dispose() {
     _scrollController.dispose();
     _controller.dispose();
+    _languageController.dispose();
     super.dispose();
   }
 
@@ -53,99 +55,111 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final state = ref.watch(searchNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          SearchBarSection(),
-          const SizedBox(height: 8),
-
-          if (state.repos.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _showScrollToTop
-                    ? IconButton(
-                        icon: const Icon(Icons.arrow_upward),
-                        onPressed: () {
-                          _scrollController.animateTo(
-                            0,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                      )
-                    : const SizedBox(width: 48),
-              ],
-            ),
-          ],
-
-          Expanded(child: _buildResult(state, isDark)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResult(SearchState state, bool isDark) {
-    if (state.status == SearchStatus.error && state.errorMessage.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(state.errorMessage),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-          ),
-        );
-        ref.read(searchNotifierProvider.notifier).clearError();
-      });
-    }
-
-    switch (state.status) {
-      case SearchStatus.initial:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+    return Scaffold(
+      appBar: CustomAppBar(),
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Stack(
           children: [
-            Icon(Icons.info_outline, size: 64, color: Colors.grey[800]),
-            const SizedBox(height: 16),
-            Text(
-              '検索キーワードを入力してください',
-              style: TextStyle(
-                color: isDark ? Colors.white70 : Colors.black87,
-                fontSize: 16,
-              ),
+            ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.only(bottom: 88),
+              itemCount: state.repos.length + 2 + (state.hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SearchBarSection(
+                      queryController: _controller,
+                      languageController: _languageController,
+                    ),
+                  );
+                } else if (index == 1) {
+                  if (state.status == SearchStatus.initial) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 64,
+                          color: Colors.grey[800],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '検索キーワードを入力してください',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black87,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else if (state.status == SearchStatus.success &&
+                      state.repos.isEmpty) {
+                    // 検索結果0件
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '検索結果がありませんでした',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black87,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                } else if (index - 2 < state.repos.length) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    child: RepoTile(repo: state.repos[index - 2]),
+                  );
+                } else {
+                  if (state.status != SearchStatus.initial) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    );
+                  }
+                }
+                return const SizedBox.shrink();
+              },
             ),
+
+            // スクロールトップボタン
+            if (_showScrollToTop)
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: FloatingActionButton.small(
+                  onPressed: () {
+                    _scrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  child: const Icon(Icons.arrow_upward),
+                ),
+              ),
           ],
-        );
-
-      case SearchStatus.loading:
-        if (state.repos.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return _buildRepoList(state);
-
-      case SearchStatus.success:
-      case SearchStatus.error:
-        return _buildRepoList(state);
-    }
-  }
-
-  Widget _buildRepoList(SearchState state) {
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: state.repos.length + (state.hasMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index < state.repos.length) {
-          return RepoTile(repo: state.repos[index]);
-        } else {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-      },
+        ),
+      ),
     );
   }
 }

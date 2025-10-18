@@ -10,14 +10,21 @@ class GitHubApi {
     String keyword,
     int page,
     RepoSortOption sortOption,
+    String? selectedLanguage,
   ) async {
-    final uri = Uri.https('api.github.com', '/search/repositories', {
-      'q': keyword,
-      'page': page.toString(),
-      'per_page': '30',
-      'sort': sortOption.field.name,
-      'order': sortOption.order.name,
-    });
+    final languageQuery = selectedLanguage != null && selectedLanguage != ''
+        ? '+language:$selectedLanguage'
+        : '';
+
+    final sortField = sortOption.field.name;
+    final sortOrder = sortOption.order.name;
+
+    final query = '$keyword$languageQuery';
+
+    final urlString =
+        'https://api.github.com/search/repositories?q=$query&sort=$sortField&order=$sortOrder&page=$page&per_page=30';
+
+    final uri = Uri.parse(urlString);
 
     final response = await http.get(uri);
 

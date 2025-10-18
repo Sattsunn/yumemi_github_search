@@ -21,13 +21,18 @@ class SearchNotifier extends StateNotifier<SearchState> {
           ),
         ),
       );
-  Future<void> search(String keyword, {bool loadMore = false}) async {
+  Future<void> search(
+    String keyword,
+    String language, {
+    bool loadMore = false,
+  }) async {
     if (_isThrottled || (keyword.isEmpty && !loadMore)) return;
 
     _isThrottled = true;
 
     final nextPage = loadMore ? state.page + 1 : 1;
     final effectiveKeyword = loadMore ? state.keyword : keyword;
+    final effectiveLanguage = loadMore ? state.selectedLanguage : language;
 
     // 新規検索時のみ状態をリセット
     if (!loadMore) {
@@ -37,6 +42,8 @@ class SearchNotifier extends StateNotifier<SearchState> {
         page: 1,
         hasMore: true,
         repos: [],
+        errorMessage: '',
+        selectedLanguage: effectiveLanguage,
       );
     }
 
@@ -46,6 +53,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
         effectiveKeyword,
         nextPage,
         state.sortOption,
+        state.selectedLanguage,
       );
 
       // 結果を追加または置き換え
@@ -68,6 +76,10 @@ class SearchNotifier extends StateNotifier<SearchState> {
 
   void setSortOption(RepoSortOption option) {
     state = state.copyWith(sortOption: option);
+  }
+
+  void setLanguage(String? language) {
+    state = state.copyWith(selectedLanguage: language);
   }
 
   void clearError() {

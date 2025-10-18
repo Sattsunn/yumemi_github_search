@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yumeimi_github_search/core/providers/theme_provider.dart';
 import 'core/theme.dart';
-import 'home.dart';
+import 'features/search/presentation/search_page.dart';
 
 class GitHubSearchApp extends ConsumerWidget {
   const GitHubSearchApp({super.key});
@@ -16,7 +16,7 @@ class GitHubSearchApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const Home(),
+      home: const SearchPage(),
     );
   }
 }

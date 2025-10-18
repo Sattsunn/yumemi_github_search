@@ -7,6 +7,7 @@ abstract class GithubRepository {
     String keyword,
     int page,
     RepoSortOption sortOption,
+    String? selectedLanguage,
   );
 }
 
@@ -20,7 +21,8 @@ class GithubRepositoryImpl implements GithubRepository {
     String keyword,
     int page,
     RepoSortOption sortOption,
+    String? selectedLanguage,
   ) async {
-    return await api.search(keyword, page, sortOption);
+    return await api.search(keyword, page, sortOption, selectedLanguage);
   }
 }

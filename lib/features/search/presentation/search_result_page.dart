@@ -29,6 +29,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: const CustomAppBar(),
       body: FutureBuilder<GithubRepo>(
         future: _fullRepoFuture,

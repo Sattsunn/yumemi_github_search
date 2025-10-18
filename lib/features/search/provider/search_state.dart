@@ -26,6 +26,7 @@ class SearchState {
   final int page;
   final bool hasMore;
   final RepoSortOption sortOption;
+  final String? selectedLanguage;
 
   SearchState({
     this.repos = const [],
@@ -38,6 +39,7 @@ class SearchState {
       RepoSortField.stars,
       RepoSortOrder.desc,
     ),
+    this.selectedLanguage,
   });
 
   SearchState copyWith({
@@ -48,6 +50,7 @@ class SearchState {
     int? page,
     bool? hasMore,
     RepoSortOption? sortOption,
+    String? selectedLanguage,
   }) {
     return SearchState(
       repos: repos ?? this.repos,
@@ -57,6 +60,7 @@ class SearchState {
       page: page ?? this.page,
       hasMore: hasMore ?? this.hasMore,
       sortOption: sortOption ?? this.sortOption,
+      selectedLanguage: selectedLanguage ?? this.selectedLanguage,
     );
   }
 }
