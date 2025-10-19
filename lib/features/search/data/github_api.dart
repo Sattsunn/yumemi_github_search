@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:yumeimi_github_search/features/search/model/github_repo.dart';
-import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
+import 'package:yumemi_github_search/features/search/model/github_repo.dart';
+import 'package:yumemi_github_search/features/search/provider/search_state.dart';
 
 class GitHubApi {
   static const String baseUrl = 'https://api.github.com';

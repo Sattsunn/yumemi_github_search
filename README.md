@@ -1,4 +1,4 @@
-# Yumeimi GitHub Search
+# Yumemi GitHub Search
 
 GitHub リポジトリをキーワード・言語・スター数で検索できる Flutter アプリです。  
 Riverpod による状態管理と GitHub API 連携で、リアルタイムにリポジトリ情報を取得できます。
@@ -42,7 +42,7 @@ Riverpod による状態管理と GitHub API 連携で、リアルタイムに�
 
 ```bash
 git clone https://github.com/Sattsunn/yumemi_github_search
-cd yumeimi_github_search
+cd yumemi_github_search
 flutter pub get
 flutter run
 ```

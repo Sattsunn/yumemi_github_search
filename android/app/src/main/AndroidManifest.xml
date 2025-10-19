@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="yumeimi_github_search"
+        android:label="yumemi_github_search"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yumeimi_github_search/core/ui/custom_app_bar.dart';
-import 'package:yumeimi_github_search/features/search/presentation/widgets/search_bar_section.dart';
-import 'package:yumeimi_github_search/features/search/provider/search_notifier.dart';
-import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
+import 'package:yumemi_github_search/core/ui/custom_app_bar.dart';
+import 'package:yumemi_github_search/features/search/presentation/widgets/search_bar_section.dart';
+import 'package:yumemi_github_search/features/search/provider/search_notifier.dart';
+import 'package:yumemi_github_search/features/search/provider/search_state.dart';
 import 'widgets/repo_tile.dart';
 
 class SearchPage extends ConsumerStatefulWidget {

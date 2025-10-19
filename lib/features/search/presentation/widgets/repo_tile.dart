@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:yumeimi_github_search/core/constants.dart';
-import 'package:yumeimi_github_search/features/search/presentation/search_result_page.dart';
+import 'package:yumemi_github_search/core/constants.dart';
+import 'package:yumemi_github_search/features/search/presentation/search_result_page.dart';
 import '../../model/github_repo.dart';
 
 class RepoTile extends StatelessWidget {

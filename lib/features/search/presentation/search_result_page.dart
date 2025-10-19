@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:yumeimi_github_search/core/ui/custom_app_bar.dart';
-import 'package:yumeimi_github_search/features/search/data/github_api.dart';
-import 'package:yumeimi_github_search/features/search/model/github_repo.dart';
+import 'package:yumemi_github_search/core/ui/custom_app_bar.dart';
+import 'package:yumemi_github_search/features/search/data/github_api.dart';
+import 'package:yumemi_github_search/features/search/model/github_repo.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:yumeimi_github_search/core/constants.dart';
+import 'package:yumemi_github_search/core/constants.dart';
 
 class SearchResultPage extends StatefulWidget {
   final GithubRepo repo;
