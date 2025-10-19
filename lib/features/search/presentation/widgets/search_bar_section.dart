@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yumeimi_github_search/features/search/presentation/widgets/language_dropdown.dart';
-import 'package:yumeimi_github_search/features/search/presentation/widgets/sort_dropdown.dart';
-import 'package:yumeimi_github_search/features/search/provider/search_notifier.dart';
-import 'package:yumeimi_github_search/core/providers/theme_provider.dart';
+import 'package:yumemi_github_search/features/search/presentation/widgets/language_dropdown.dart';
+import 'package:yumemi_github_search/features/search/presentation/widgets/sort_dropdown.dart';
+import 'package:yumemi_github_search/features/search/provider/search_notifier.dart';
+import 'package:yumemi_github_search/core/providers/theme_provider.dart';
 
 class SearchBarSection extends ConsumerWidget {
   final TextEditingController queryController;

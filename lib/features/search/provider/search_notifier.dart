@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:yumeimi_github_search/features/search/data/github_api.dart';
+import 'package:yumemi_github_search/features/search/data/github_api.dart';
 import '../data/github_repository.dart';
 import 'search_state.dart';
 

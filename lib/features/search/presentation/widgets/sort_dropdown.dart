@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yumeimi_github_search/features/search/provider/search_state.dart';
+import 'package:yumemi_github_search/features/search/provider/search_state.dart';
 
 class SortDropdown extends StatelessWidget {
   final RepoSortOption selectedOption;
